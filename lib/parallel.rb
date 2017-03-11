@@ -28,10 +28,14 @@ module Parallel
     attr_reader :exception
     def initialize(exception)
       @exception =
-        begin
-          Marshal.dump(exception) && exception
-        rescue
-          UndumpableException.new(exception)
+        if [Parallel::Break, Parallel::Kill].include? exception.class
+          exception.class.new
+        else
+          begin
+            Marshal.dump(exception) && exception
+          rescue
+            UndumpableException.new(exception)
+          end
         end
     end
   end
